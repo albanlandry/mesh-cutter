@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -90,8 +91,37 @@ public class MouseSlice : MonoBehaviour {
         }
 
         // Separate meshes if a slice was made
-        if (slicedAny)
+        if (slicedAny) {
             SeparateMeshes(positive, negative, normal);
+            UpdateCollider(positive, negative);
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="positive"></param>
+    /// <param name="negative"></param>
+    private void UpdateCollider(List<Transform> positive, List<Transform> negative)
+    {
+        foreach(Transform pos in positive)
+        {
+            MeshCollider collider = pos.GetComponent<MeshCollider>();
+
+            if (collider) { 
+               collider.sharedMesh = pos.GetComponent<MeshFilter>().mesh;
+            }
+        }
+
+        foreach (Transform neg in negative)
+        {
+            MeshCollider collider = neg.GetComponent<MeshCollider>();
+
+            if (collider)
+            {
+                collider.sharedMesh = neg.GetComponent<MeshFilter>().mesh;
+            }
+        }
     }
 
     bool SliceObject(ref Plane slicePlane, GameObject obj, List<Transform> positiveObjects, List<Transform> negativeObjects)
