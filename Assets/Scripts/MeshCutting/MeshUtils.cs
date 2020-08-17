@@ -3,7 +3,6 @@ using UnityEngine;
 
 public static class MeshUtils
 {
-
     /// <summary>
     /// Find center of polygon by averaging vertices
     /// </summary>
@@ -78,4 +77,100 @@ public static class MeshUtils
         pairs[pos2 + 1] = temp2;
     }
 
+    /// <summary>
+    /// Find the number of surfaces of a mesh
+    /// </summary>
+    /// <param name="mesh"></param>
+    /// <param name="bias"></param>
+    /// <returns></returns>
+    public static int CountSurfaces(Mesh mesh, float bias)
+    {
+        Vector3[] vertices = mesh.vertices;
+        int[] triangles = mesh.triangles;
+        Vector3[] normals = mesh.normals;
+        int count = 0; // Faces count
+
+        // Debug.Log("Triangles Count: " +triangles.Length);
+
+        for (int i = 0; i < triangles.Length;  i+=3) {
+            bool foundFace = false;
+            int[] currentFace = {
+                triangles[i],
+                triangles[i + 1],
+                triangles[i + 2]
+            };
+
+            // Loop through alf the faces to find those with similar normals
+            for (int j = i+3; j < triangles.Length; j += 3) {
+                int[] triangleFace = {
+                    triangles[j],
+                    triangles[j + 1],
+                    triangles[j + 2]
+                };
+
+                // We check the normal only if the faces are connected
+                if (IsConnected(currentFace, triangleFace)) {
+
+                    Debug.Log("Connected");
+
+                    Vector3[] currentTriangle = {
+                        normals[currentFace[0]],
+                        normals[currentFace[1]],
+                        normals[currentFace[2]]
+                    };
+
+                    Vector3[] triangle = {
+                        normals[triangleFace[0]],
+                        normals[triangleFace[1]],
+                        normals[triangleFace[2]]
+                    };
+
+
+                    // Check whether the normals are similar
+                    Vector3 n1 = TriangleNormal(currentTriangle[0], currentTriangle[1], currentTriangle[2]);
+                    Vector3 n2 = TriangleNormal(triangle[0], triangle[1], triangle[2]);
+
+                    Debug.Log("Normales: n1: "+n1+", n2: "+n2+", Dot: "+ Vector3.Dot(n1, n2)+", Angle: "+Vector3.Angle(n1, n2));
+
+                    if (Vector3.Dot(n1, n2) == 1)
+                    {
+                        foundFace = true;
+                    }
+                }
+            }
+            
+            // If we found a face
+            if (foundFace)
+            {
+                count++;
+            }
+            // Debug.Log("Triangle: "+ triangles[i]+ ", "+ triangles[i+1]+ ", "+ triangles[i+2]);
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    ///  Find the normal of a triangle mesh
+    /// </summary>
+    /// <param name="mesh"></param>
+    public static Vector3 TriangleNormal(Vector3 v1, Vector3 v2, Vector3 v3)
+    {
+        return (v1 + v2 + v3) / 3;
+    }
+
+    /// <summary>
+    /// Check whether faceA and faceB are connected
+    /// </summary>
+    /// <param name="faceA"></param>
+    /// <param name="faceB"></param>
+    /// <returns></returns>
+    public static bool IsConnected(int[] faceA, int[] faceB)
+    {
+        for (int i = 0; i < faceA.Length; i++)
+            for (int j = 0; j < faceB.Length; j++)
+                if (faceA[i] == faceB[j])
+                    return true;
+        return false;
+    }
 }

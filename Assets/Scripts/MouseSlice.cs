@@ -94,6 +94,27 @@ public class MouseSlice : MonoBehaviour {
         if (slicedAny) {
             SeparateMeshes(positive, negative, normal);
             UpdateCollider(positive, negative);
+
+            // Update the bound of the components
+            UpdateMeshSize(positive);
+            UpdateMeshSize(negative);
+        }
+    }
+
+    /// <summary>
+    /// Update the size of the meshes in the list
+    /// </summary>
+    /// <param name="meshes"></param>
+    private void UpdateMeshSize(List<Transform> meshes) {
+        foreach(Transform mesh in meshes)
+        {
+            SessionModel model = mesh.GetComponent<SessionModel>();
+
+            if (model != null) {
+                Bounds bounds = mesh.GetComponent<Renderer>().bounds;
+
+                model.UpdateSize(bounds.size.x, bounds.size.y, bounds.size.z);
+            }
         }
     }
 

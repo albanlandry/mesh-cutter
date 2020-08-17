@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -94,6 +93,10 @@ public class MeshCutter
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public Vector3 GetFirstVertex()
     {
         if (ogVertices.Count == 0)
