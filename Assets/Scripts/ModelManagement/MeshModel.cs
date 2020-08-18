@@ -1,31 +1,31 @@
-﻿public class MeshModel
+﻿public class MeshedModel
 {
-    protected MeshModel[] children;
+    protected MeshedModel[] children;
     protected float width;
     protected float heigth;
     protected float depth;
     protected int material;
 
-    public MeshModel()
+    public MeshedModel()
     {
     }
 
-    public MeshModel(int childrenCount)
+    public MeshedModel(int childrenCount)
     {
-        children = new MeshModel[childrenCount];
+        children = new MeshedModel[childrenCount];
     }
 
-    public MeshModel(MeshModel[] children)
+    public MeshedModel(MeshedModel[] children)
     {
         this.children = children;
     }
 
-    public MeshModel(MeshModel[] children, int material) : this(children)
+    public MeshedModel(MeshedModel[] children, int material) : this(children)
     {
         this.material = material;
     }
 
-    public MeshModel(float width, float heigth, float depth, int material)
+    public MeshedModel(float width, float heigth, float depth, int material)
     {
         this.width = width;
         this.heigth = heigth;
@@ -33,7 +33,7 @@
         this.material = material;
     }
 
-    public MeshModel(MeshModel[] children, float width, float heigth, float depth)
+    public MeshedModel(MeshedModel[] children, float width, float heigth, float depth)
     {
         this.children = children;
         this.width = width;
@@ -41,7 +41,7 @@
         this.depth = depth;
     }
 
-    public MeshModel(MeshModel[] children, float width, float heigth, float depth, int material) : this(children, width, heigth, depth)
+    public MeshedModel(MeshedModel[] children, float width, float heigth, float depth, int material) : this(children, width, heigth, depth)
     {
         this.material = material;
     }
@@ -50,5 +50,5 @@
     public float Height { get; set; }
     public float Depth { get; set; }
     public int Material { get; set; }
-    public MeshModel[] Children { get; set; }
+    public MeshedModel[] Children { get; set; }
 }

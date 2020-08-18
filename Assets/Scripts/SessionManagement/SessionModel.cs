@@ -3,11 +3,11 @@ using UnityEngine;
 
 public class SessionModel : MonoBehaviour
 {
-    private MeshModel model;
+    private MeshedModel model;
 
     private void Awake()
     {
-        model = new MeshModel(50, 200, 50, 1);
+        model = new MeshedModel(50, 200, 50, 1);
     }
 
     /// <summary>

@@ -19,7 +19,9 @@ public class MouseSlice : MonoBehaviour {
 
     private MeshCutter meshCutter;
     private TempMesh biggerMesh, smallerMesh;
+    private string selection;
 
+    SliceManager manager;
     #region Utility Functions
 
     void DrawPlane(Vector3 start, Vector3 end, Vector3 normalVec)
@@ -41,6 +43,7 @@ public class MouseSlice : MonoBehaviour {
 
     private void OnEnable()
     {
+        manager = GetComponent<SliceManager>();
         lineRenderer.OnLineDrawn += OnLineDrawn;
     }
 
@@ -67,17 +70,19 @@ public class MouseSlice : MonoBehaviour {
 
     void SliceObjects(Vector3 point, Vector3 normal)
     {
-        var toSlice = GameObject.FindGameObjectsWithTag("Sliceable");
+        var toSlice = GameObject.Find(manager.selected);
 
         // Put results in positive and negative array so that we separate all meshes if there was a cut made
         List<Transform> positive = new List<Transform>(),
             negative = new List<Transform>();
 
-        GameObject obj;
+        GameObject obj = toSlice;
         bool slicedAny = false;
+        /*
         for (int i = 0; i < toSlice.Length; ++i)
         {
             obj = toSlice[i];
+        */
             // We multiply by the inverse transpose of the worldToLocal Matrix, a.k.a the transpose of the localToWorld Matrix
             // Since this is how normal are transformed
             var transformedNormal = ((Vector3)(obj.transform.localToWorldMatrix.transpose * normal)).normalized;
@@ -88,8 +93,9 @@ public class MouseSlice : MonoBehaviour {
                 obj.transform.InverseTransformPoint(point));
 
             slicedAny = SliceObject(ref slicePlane, obj, positive, negative) || slicedAny;
+        /*
         }
-
+        */
         // Separate meshes if a slice was made
         if (slicedAny) {
             SeparateMeshes(positive, negative, normal);
