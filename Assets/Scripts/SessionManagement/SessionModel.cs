@@ -4,10 +4,29 @@ using UnityEngine;
 public class SessionModel : MonoBehaviour
 {
     private MeshedModel model;
+    private MeshExposure exposure;
 
     private void Awake()
     {
         model = new MeshedModel(50, 200, 50, 1);
+        exposure = new MeshExposure();
+    }
+
+    private void Start()
+    {
+        Mesh mesh = GetComponent<MeshFilter>().mesh;
+        exposure.Faces = MeshUtils.CountSurfaces(mesh, 0.0f);
+        exposure.Material = 3;
+        exposure.Exposure = ExposureCalculator.ComputeExposure(exposure.Faces, exposure.Material);
+    }
+
+    public MeshExposure GetExposure() {
+        /**
+        Mesh mesh = GetComponent<MeshFilter>().mesh;
+        exposure.Faces = MeshUtils.CountSurfaces(mesh, 0.0f);
+        exposure.Exposure = ExposureCalculator.ComputeExposure(exposure.Faces, 1);
+        */
+        return exposure;
     }
 
     /// <summary>

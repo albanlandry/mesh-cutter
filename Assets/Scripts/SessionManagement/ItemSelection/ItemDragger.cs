@@ -48,6 +48,7 @@ public class ItemDragger : MonoBehaviour
             curMousePos.z -= yDiff;
         }
 
+
         moveAction.MoveItem(gameObject, curMousePos + offset);
         prevMousePos = curMousePos;// Quit track of the current position for the next iteration.
 

@@ -29,6 +29,7 @@ public class HierarchyListModel
         foreach (HierarchyListNode n in nodes) {
             if (n.Id.ToLower().Equals(node.Id.ToLower())) {
                 this.nodes.Remove(n);
+                return;
             }
         }
     }

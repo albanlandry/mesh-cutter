@@ -9,35 +9,127 @@ public class UIManager : MonoBehaviour
 {
     [SerializeField] GameObject content;
     [SerializeField] GameObject hierarchyRow;
+    [SerializeField] GameObject exposurePanel;
     [SerializeField] Color highlightColor = new Color(255.0f, 145.0f, 0.0f);
     [SerializeField] Color DefaultColor = Color.white;
+    [SerializeField] Dropdown dropDown;
+    [SerializeField] Text editionMode;
 
     private HierarchyListModel hierarchy;
+    private SelectionManager selectionManager;
+    private const string modelValue = "Model: ";
+    private const string surfacesValue = "Surface: ";
+    private const string exposureValue = "Exposures: ";
+
+    private Dictionary<int, int> materialType;
 
     private void OnEnable()
     {
+        materialType = new Dictionary<int, int>();
+        materialType.Add(0, 3);
+        materialType.Add(1, 5);
+        materialType.Add(2, 10);
     }
     // Start is called before the first frame update
     void Start()
     {
         SessionEvents.current.onModelLoaded += AddToHierarchy;
+        SessionEvents.current.onModelUnLoaded += RemoveFromHierarchy;
         SessionEvents.current.OnModelSelected += SelectRow;
         SessionEvents.current.OnModelDeselected += DeselectRow;
+        SessionEvents.current.OnCutModeEnable += EnableGUIElements;
+        SessionEvents.current.OnCutModeDisable += DisableGUIElements;
+        SessionEvents.current.OnSelectionAny += UpdateExposure;
+        SessionEvents.current.OnDeselectionAny += UpdateExposure;
 
         hierarchy = new HierarchyListModel();
+        selectionManager = GameObject.Find("MainManager").GetComponent<SelectionManager>();
+        editionMode.text = "Selection Mode";
     }
 
     // Update is called once per frame
+    /*
     void Update()
     {
-         
+        UpdateExposure();
+    }
+    */
+
+    private void UpdateExposure() {
+        string modelNames = "";
+
+        if (selectionManager) {
+            List<string> selection = selectionManager.GetSelection();
+            MeshExposure exposure = new MeshExposure(0, 0.0f);
+
+            Debug.Log("Selection: "+selection.Count);
+            foreach(string selected in selection)
+            {
+                // Find the corresponding object sessionModel
+                MeshExposure exp = GameObject.Find(selected).GetComponent<SessionModel>().GetExposure();
+
+                Debug.Log(exp.Exposure + ", " + exp.Faces);
+
+                exposure.Faces = exposure.Faces + exp.Faces;
+                exposure.Exposure = exposure.Exposure + exp.Exposure;
+                modelNames += selected+", ";
+            }
+
+            UpdateExposurePanel(modelValue + modelNames, surfacesValue + exposure.Faces, exposureValue + exposure.Exposure);
+        }
+    }
+
+    void EnableGUIElements() {
+        if(selectionManager.SelectionCount() == 1)
+        {
+            editionMode.text = "Cutting Mode";
+        }
+    }
+
+    void DisableGUIElements() {
+        editionMode.text = "Selection Mode";
+    }
+
+    public void UpdateMaterial()
+    {
+        int type = materialType[dropDown.value];
+        Debug.Log("Type: " + type);
+        if (selectionManager)
+        {
+            List<string> selection = selectionManager.GetSelection();
+            foreach (string selected in selection)
+            {
+                MeshExposure exp = GameObject.Find(selected).GetComponent<SessionModel>().GetExposure();
+                exp.Material = type;
+                exp.Exposure = ExposureCalculator.ComputeExposure(exp.Faces, exp.Material); 
+            }
+
+        }
+
+        UpdateExposure();
+    }
+
+    void UpdateExposurePanel(string model, string surface, string exposure) {
+        UpdateModelValueView("modelValue", model);
+        UpdateModelValueView("surfaceValue", surface);
+        UpdateModelValueView("exposureValue", exposure);
+    }
+
+    void UpdateModelValueView(string name, string value)
+    {
+        // GameObject.Find(name).GetComponent<Text>().text = value;
     }
 
     private void OnDisable()
     {
         SessionEvents.current.onModelLoaded -= AddToHierarchy;
+        SessionEvents.current.onModelUnLoaded -= RemoveFromHierarchy;
         SessionEvents.current.OnModelSelected -= SelectRow;
         SessionEvents.current.OnModelDeselected -= DeselectRow;
+        SessionEvents.current.OnCutModeEnable -= EnableGUIElements;
+        SessionEvents.current.OnCutModeDisable -= DisableGUIElements;
+        SessionEvents.current.OnSelectionAny -= UpdateExposure;
+        SessionEvents.current.OnDeselectionAny -= UpdateExposure;
     }
 
     private void AddToHierarchy(string id, string parent)
@@ -47,7 +139,23 @@ public class UIManager : MonoBehaviour
         node.Parent = parent;
 
         hierarchy.AddNode(node);
-        UpdateHierarchyView(node);
+        UpdateHierarchyView();
+    }
+
+    private void RemoveFromHierarchy(string id)
+    {
+        HierarchyListNode node = new HierarchyListNode();
+        node.Id = id;
+        hierarchy.Remove(node);
+
+        UpdateHierarchyView();
+    }
+
+    private void ClearContentHierarchyContent() { 
+        foreach(Transform child in content.transform)
+        {
+            GameObject.Destroy(child.gameObject);
+        }
     }
 
     void SelectRow(string id) {
@@ -71,15 +179,20 @@ public class UIManager : MonoBehaviour
     /// <summary>
     /// 
     /// </summary>
-    private void UpdateHierarchyView(HierarchyListNode node)
+    private void UpdateHierarchyView()
     {
-        int pos = hierarchy.Count - 1;
-        GameObject row = Instantiate(hierarchyRow, content.transform);
+        ClearContentHierarchyContent();
 
-        row.name = node.Id+"Text";
-        SetRowTextVal(row, node.Id);
+        for (int i = 0; i < hierarchy.Count; i++) {
+            HierarchyListNode n = hierarchy.GetNodeAt(i);
 
-        UpdateChildPosition(row, pos, 0.0f);
+            GameObject row = Instantiate(hierarchyRow, content.transform);
+
+            row.name = n.Id + "Text";
+            SetRowTextVal(row, n.Id);
+
+            UpdateChildPosition(row, i, 0.0f);
+        }
     }
 
     /// <summary>

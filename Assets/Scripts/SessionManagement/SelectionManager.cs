@@ -12,11 +12,18 @@ public class SelectionManager : MonoBehaviour
 
     void Start()
     {
+        SessionEvents.current.OnSelectionClear += ClearSelection;
+
         selected = new List<string>();
         rayProvider = GetComponent<IRayProvider>();
         selector = GetComponent<ISelector>();
         selectionShader = Shader.Find("Unlit/Outline");
         standardShader = Shader.Find("Standard");
+    }
+
+    private void OnDisable()
+    {
+        SessionEvents.current.OnSelectionClear -= ClearSelection;
     }
 
     // Update is called once per frame
@@ -45,12 +52,14 @@ public class SelectionManager : MonoBehaviour
                     if (!selected.Contains(select))
                     {
                         selected.Add(select);
+                        SessionEvents.current.SelectionAny();
                         SessionEvents.current.ModelSelected(select);
                         UpdateMeshShader(selection.gameObject, selectionShader);
                     }
                     else // Deselect to delete from the list of selected item
                     {
                         selected.Remove(select);
+                        SessionEvents.current.DeselectionAny();
                         SessionEvents.current.ModelDeselected(select);
                         UpdateMeshShader(selection.gameObject, standardShader);
                     }
@@ -70,5 +79,18 @@ public class SelectionManager : MonoBehaviour
 
     public List<string> GetSelection() {
         return selected;
+    }
+
+    public int SelectionCount() {
+        return selected.Count;
+    }
+
+    public void ClearSelection() { 
+        foreach(string select in selected)
+        {
+            SessionEvents.current.ModelDeselected(select);
+        }
+
+        selected.Clear();
     }
 }

@@ -17,3 +17,12 @@ The following packages were added:
   com.unity.xr.legacyinputhelpers@2.1.4
 The following packages were removed:
   com.unity.package-manager-ui@2.0.3
+
+=== Wed Aug 19 01:25:00 2020
+
+Packages were changed.
+Update Mode: updateDependencies
+
+The following packages were updated:
+  com.unity.ide.vscode from version 1.2.0 to 1.2.1
+  com.unity.multiplayer-hlapi from version 1.0.4 to 1.0.6

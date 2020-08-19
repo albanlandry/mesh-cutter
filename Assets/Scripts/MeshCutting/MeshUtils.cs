@@ -162,7 +162,7 @@ public static class MeshUtils
         // Debug.Log("Triangles Count: " +triangles.Length);
         List<MeshFace> faces = GetFaces(triangles, vertices);
 
-        Debug.Log("Faces number: " + faces.Count);
+        // Debug.Log("Faces number: " + faces.Count);
 
         /*
         int[] currentFace = {
@@ -212,7 +212,7 @@ public static class MeshUtils
         }
         */
 
-        return count;
+        return faces.Count;
     }
 
     /// <summary>

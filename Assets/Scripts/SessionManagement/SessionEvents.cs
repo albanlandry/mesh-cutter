@@ -68,7 +68,7 @@ public class SessionEvents : MonoBehaviour
 
     /** EVENT RELATED TO OBJECT MANAGEMENT */
     public event Action<String, String> onModelLoaded;
-    public event Action<String, String> onModelUnLoaded;
+    public event Action<String> onModelUnLoaded;
     public void ModelLoaded(String id, String parent)
     {
         if (onModelLoaded != null) {
@@ -81,17 +81,20 @@ public class SessionEvents : MonoBehaviour
     /// </summary>
     /// <param name="id"></param>
     /// <param name="parent"></param>
-    public void ModelUnLoaded(String id, String parent)
+    public void ModelUnLoaded(String id)
     {
         if (onModelUnLoaded != null)
         {
-            onModelUnLoaded(id, parent);
+            onModelUnLoaded(id);
         }
     }
 
     // Selection of an ibject in session
     public event Action<String> OnModelSelected;
     public event Action<String> OnModelDeselected;
+    public event Action OnSelectionClear;
+    public event Action OnSelectionAny;
+    public event Action OnDeselectionAny;
     public void ModelSelected(string id) {
         if (OnModelSelected != null) {
             OnModelSelected(id);
@@ -103,6 +106,26 @@ public class SessionEvents : MonoBehaviour
         if (OnModelDeselected != null)
         {
             OnModelDeselected(id);
+        }
+    }
+
+    public void ClearSelection() {
+        if (OnSelectionClear != null) {
+            OnSelectionClear();
+        }
+    }
+
+    public void SelectionAny() {
+        if (OnSelectionAny != null) {
+            OnSelectionAny();
+        }
+    }
+
+    public void DeselectionAny()
+    {
+        if (OnDeselectionAny != null)
+        {
+            OnDeselectionAny();
         }
     }
 

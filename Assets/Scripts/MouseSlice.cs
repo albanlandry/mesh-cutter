@@ -21,6 +21,7 @@ public class MouseSlice : MonoBehaviour {
     private TempMesh biggerMesh, smallerMesh;
     private string selection;
 
+    public SelectionManager selectionManager;
     SliceManager manager;
     #region Utility Functions
 
@@ -72,17 +73,23 @@ public class MouseSlice : MonoBehaviour {
     {
         var toSlice = GameObject.Find(manager.selected);
 
-        // Put results in positive and negative array so that we separate all meshes if there was a cut made
-        List<Transform> positive = new List<Transform>(),
-            negative = new List<Transform>();
+        Debug.Log("Selected: " + manager.selected);
 
-        GameObject obj = toSlice;
-        bool slicedAny = false;
-        /*
-        for (int i = 0; i < toSlice.Length; ++i)
+        string basename = toSlice.name;
+
+        if (toSlice)
         {
-            obj = toSlice[i];
-        */
+            // Put results in positive and negative array so that we separate all meshes if there was a cut made
+            List<Transform> positive = new List<Transform>(),
+                negative = new List<Transform>();
+
+            GameObject obj = toSlice;
+            bool slicedAny = false;
+            /*
+            for (int i = 0; i < toSlice.Length; ++i)
+            {
+                obj = toSlice[i];
+            */
             // We multiply by the inverse transpose of the worldToLocal Matrix, a.k.a the transpose of the localToWorld Matrix
             // Since this is how normal are transformed
             var transformedNormal = ((Vector3)(obj.transform.localToWorldMatrix.transpose * normal)).normalized;
@@ -93,17 +100,56 @@ public class MouseSlice : MonoBehaviour {
                 obj.transform.InverseTransformPoint(point));
 
             slicedAny = SliceObject(ref slicePlane, obj, positive, negative) || slicedAny;
-        /*
-        }
-        */
-        // Separate meshes if a slice was made
-        if (slicedAny) {
-            SeparateMeshes(positive, negative, normal);
-            UpdateCollider(positive, negative);
+            /*
+            }
+            */
+            // Separate meshes if a slice was made
+            if (slicedAny)
+            {
+                SeparateMeshes(positive, negative, normal);
+                UpdateCollider(positive, negative);
 
-            // Update the bound of the components
-            UpdateMeshSize(positive);
-            UpdateMeshSize(negative);
+                // Update the bound of the components
+                UpdateMeshSize(positive);
+                UpdateMeshSize(negative);
+
+                SessionEvents.current.ClearSelection();
+
+                UpdateMeshName(positive, basename + "_1");
+                UpdateMeshName(negative, basename + "_2");
+
+                LoadModelInSession(positive);
+                LoadModelInSession(negative);
+
+                SessionManager.current.UnloadModel(basename);
+                selectionManager.ClearSelection();
+            }
+        }
+    }
+
+    void LoadModelInSession(List<Transform> meshes) {
+        foreach (Transform mesh in meshes)
+        {
+            SessionModel model = mesh.GetComponent<SessionModel>();
+
+            if (model != null)
+            {
+                SessionManager.current.LoadModel(model, null);
+            }
+        }
+    }
+
+    private void UpdateMeshName(List<Transform> meshes, string basename)
+    {
+        int count = ObjectContainer.childCount;
+        foreach (Transform mesh in meshes)
+        {
+            SessionModel model = mesh.GetComponent<SessionModel>();
+
+            if (model != null)
+            {
+                mesh.gameObject.name = basename;
+            }
         }
     }
 
