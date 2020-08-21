@@ -48,12 +48,13 @@ public class UIManager : MonoBehaviour
     }
 
     // Update is called once per frame
-    /*
     void Update()
     {
-        UpdateExposure();
+        foreach(var item in selectionManager.GetSelection())
+        {
+            SelectRow(item);
+        }
     }
-    */
 
     private void UpdateExposure() {
         string modelNames = "";
@@ -62,13 +63,10 @@ public class UIManager : MonoBehaviour
             List<string> selection = selectionManager.GetSelection();
             MeshExposure exposure = new MeshExposure(0, 0.0f);
 
-            Debug.Log("Selection: "+selection.Count);
             foreach(string selected in selection)
             {
                 // Find the corresponding object sessionModel
                 MeshExposure exp = GameObject.Find(selected).GetComponent<SessionModel>().GetExposure();
-
-                Debug.Log(exp.Exposure + ", " + exp.Faces);
 
                 exposure.Faces = exposure.Faces + exp.Faces;
                 exposure.Exposure = exposure.Exposure + exp.Exposure;
@@ -80,10 +78,7 @@ public class UIManager : MonoBehaviour
     }
 
     void EnableGUIElements() {
-        if(selectionManager.SelectionCount() == 1)
-        {
             editionMode.text = "Cutting Mode";
-        }
     }
 
     void DisableGUIElements() {

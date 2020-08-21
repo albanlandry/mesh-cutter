@@ -9,10 +9,14 @@ public class SelectionManager : MonoBehaviour
     private ISelector selector;
     private Shader selectionShader;
     private Shader standardShader;
+    bool isCutting = false;
 
     void Start()
     {
         SessionEvents.current.OnSelectionClear += ClearSelection;
+        SessionEvents.current.OnCutModeEnable += CutEnable;
+        SessionEvents.current.OnCutModeDisable += CutDisable;
+        SessionEvents.current.onModelUnLoaded += removeFromSelection;
 
         selected = new List<string>();
         rayProvider = GetComponent<IRayProvider>();
@@ -24,48 +28,96 @@ public class SelectionManager : MonoBehaviour
     private void OnDisable()
     {
         SessionEvents.current.OnSelectionClear -= ClearSelection;
+        SessionEvents.current.OnCutModeEnable -= CutEnable;
+        SessionEvents.current.OnCutModeDisable -= CutDisable;
+        SessionEvents.current.onModelUnLoaded -= removeFromSelection;
+    }
+
+    void CutEnable() {
+        isCutting = true;
+    }
+
+    void CutDisable() {
+        isCutting = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        Transform selection;
+        if (!isCutting) { 
+            Transform selection;
 
-        if (Input.GetMouseButtonUp(0))
-        {
-            // Create the ray
-            Ray ray = rayProvider.CreateRay();
-
-            // Check if the ray hits a selectable object 
-            selector.check(ray);
-
-            // Get the selection 
-            selection = selector.GetSelection();
-
-            // We add the selection into the selection list if it is not already present
-            if (selection != null)
+            if (Input.GetMouseButtonUp(0))
             {
-                string select = selection.gameObject.name;
+                // Create the ray
+                Ray ray = rayProvider.CreateRay();
 
-                if (select != null)
+                // Check if the ray hits a selectable object 
+                selector.check(ray);
+
+                // Get the selection 
+                selection = selector.GetSelection();
+
+                // We add the selection into the selection list if it is not already present
+                if (selection != null)
                 {
-                    if (!selected.Contains(select))
+                    string select = selection.gameObject.name;
+
+                    if (select != null)
                     {
-                        selected.Add(select);
-                        SessionEvents.current.SelectionAny();
-                        SessionEvents.current.ModelSelected(select);
-                        UpdateMeshShader(selection.gameObject, selectionShader);
-                    }
-                    else // Deselect to delete from the list of selected item
-                    {
-                        selected.Remove(select);
-                        SessionEvents.current.DeselectionAny();
-                        SessionEvents.current.ModelDeselected(select);
-                        UpdateMeshShader(selection.gameObject, standardShader);
+                        if (!selected.Contains(select))
+                        {
+                            /*
+                            selected.Add(select);
+                            SessionEvents.current.SelectionAny();
+                            SessionEvents.current.ModelSelected(select);
+                            UpdateMeshShader(selection.gameObject, selectionShader);
+                            */
+                            SelectModel(selection.gameObject);
+                        }
+                        else // Deselect to delete from the list of selected item
+                        {
+                            /*
+                            selected.Remove(select);
+                            SessionEvents.current.DeselectionAny();
+                            SessionEvents.current.ModelDeselected(select);
+                            UpdateMeshShader(selection.gameObject, standardShader);
+                            */
+                            DeselectModel(selection.gameObject);
+                        }
                     }
                 }
             }
-        }
+        } // isCutting
+    }
+
+    public void SelectModel(GameObject obj)
+    {
+        selected.Add(obj.name);
+        SessionEvents.current.SelectionAny();
+        SessionEvents.current.ModelSelected(obj.name);
+        UpdateMeshShader(obj, selectionShader);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="obj"></param>
+    public void DeselectModel(GameObject obj)
+    {
+        selected.Remove(obj.name);
+        SessionEvents.current.DeselectionAny();
+        SessionEvents.current.ModelDeselected(obj.name);
+        UpdateMeshShader(obj, standardShader);
+    }
+
+    /// <summary>
+    /// Callback to execute when a model is unloaded from the session
+    /// </summary>
+    /// <param name="selected"></param>
+    private void removeFromSelection(string selection)
+    {
+        selected.Remove(selection);
     }
 
     /// <summary>
@@ -85,10 +137,11 @@ public class SelectionManager : MonoBehaviour
         return selected.Count;
     }
 
-    public void ClearSelection() { 
-        foreach(string select in selected)
+    public void ClearSelection() {
+        var selection = new List<string>(GetSelection());
+        foreach(string select in selection)
         {
-            SessionEvents.current.ModelDeselected(select);
+            DeselectModel(GameObject.Find(select));
         }
 
         selected.Clear();

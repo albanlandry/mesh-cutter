@@ -47,8 +47,9 @@ public class SessionModel : MonoBehaviour
         model.Height = height;
         model.Depth = depth;
 
+        /*
         Debug.Log("w: " + width+", h: "+height+", depth: "+depth);
-
         Debug.Log("Polygon Faces: "+ (transform.GetComponent<MeshFilter>().mesh.triangles.Length / 3 ));
+        */
     }
 }

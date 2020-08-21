@@ -20,17 +20,19 @@ public class SliceManager : MonoBehaviour
     void EnableCut() {
         List<string> selection = selectionManager.GetSelection();
 
+        /*
         if (selection.Count > 1) {
             Debug.Log("Can only cut one mesh at the time");
             return;
         }
+        */
 
         if (selection == null || selection.Count <= 0 ) {
             Debug.Log("NO MESH SELECTED");
             return;
         }
 
-        if (selection.Count == 1)
+        if (selection.Count > 0)
         {
             lineRenderer.enabled = true;
             slice.enabled = true;
