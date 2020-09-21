@@ -52,9 +52,9 @@ public class SessionManager : MonoBehaviour
     private void Update()
     {
         if (Input.GetKey(KeyCode.C)) {
-            if (selectionManager.SelectionCount() > 0) {
+            // if (selectionManager.SelectionCount() > 0) {
                 EnableCutMode();
-            }
+            // }
         }
         else
         {

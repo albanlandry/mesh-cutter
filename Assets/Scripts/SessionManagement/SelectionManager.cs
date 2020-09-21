@@ -5,11 +5,15 @@ using UnityEngine;
 public class SelectionManager : MonoBehaviour
 {
     List<string> selected;
+    public RectTransform selectionBox;
+    private Vector2 startPos;
+
     private IRayProvider rayProvider;
     private ISelector selector;
     private Shader selectionShader;
     private Shader standardShader;
     bool isCutting = false;
+    bool isBoxSelection = false;
 
     void Start()
     {
@@ -47,48 +51,109 @@ public class SelectionManager : MonoBehaviour
         if (!isCutting) { 
             Transform selection;
 
+            if (Input.GetMouseButtonDown(0))
+            {
+                startPos = Input.mousePosition;
+            }
+
             if (Input.GetMouseButtonUp(0))
             {
-                // Create the ray
-                Ray ray = rayProvider.CreateRay();
+                DeselectAll();
+                ReleaseSelectionBox();
 
-                // Check if the ray hits a selectable object 
-                selector.check(ray);
-
-                // Get the selection 
-                selection = selector.GetSelection();
-
-                // We add the selection into the selection list if it is not already present
-                if (selection != null)
+                if (isBoxSelection)
                 {
-                    string select = selection.gameObject.name;
+                    isBoxSelection = false;
+                }
+                else
+                {
+                    // Create the ray
+                    Ray ray = rayProvider.CreateRay();
 
-                    if (select != null)
+                    // Check if the ray hits a selectable object 
+                    selector.check(ray);
+
+                    // Get the selection 
+                    selection = selector.GetSelection();
+
+                    // We add the selection into the selection list if it is not already present
+                    if (selection != null)
                     {
-                        if (!selected.Contains(select))
+                        string select = selection.gameObject.name;
+                        // Debug.Log("selection: " + select);
+                        if (select != null)
                         {
-                            /*
-                            selected.Add(select);
-                            SessionEvents.current.SelectionAny();
-                            SessionEvents.current.ModelSelected(select);
-                            UpdateMeshShader(selection.gameObject, selectionShader);
-                            */
-                            SelectModel(selection.gameObject);
+                            if (!selected.Contains(select))
+                            {
+                                /*
+                                selected.Add(select);
+                                SessionEvents.current.SelectionAny();
+                                SessionEvents.current.ModelSelected(select);
+                                UpdateMeshShader(selection.gameObject, selectionShader);
+                                */
+                                SelectModel(selection.gameObject);
+                            }
+                            else // Deselect to delete from the list of selected item
+                            {
+                                /*
+                                selected.Remove(select);
+                                SessionEvents.current.DeselectionAny();
+                                SessionEvents.current.ModelDeselected(select);
+                                UpdateMeshShader(selection.gameObject, standardShader);
+                                */
+                                DeselectModel(selection.gameObject);
+                            }
                         }
-                        else // Deselect to delete from the list of selected item
-                        {
-                            /*
-                            selected.Remove(select);
-                            SessionEvents.current.DeselectionAny();
-                            SessionEvents.current.ModelDeselected(select);
-                            UpdateMeshShader(selection.gameObject, standardShader);
-                            */
-                            DeselectModel(selection.gameObject);
-                        }
+                    }
+                    else
+                    {
+                        DeselectAll();
                     }
                 }
             }
+
+            // Mouse held down
+            if (Input.GetMouseButton(0))
+            {
+                UpdateSelectionBox(Input.mousePosition);
+            }
         } // isCutting
+    }
+
+    void UpdateSelectionBox(Vector2 mousePos)
+    {
+        if (!selectionBox.gameObject.activeInHierarchy)
+        {
+            selectionBox.gameObject.SetActive(true);
+        }
+
+        float width = mousePos.x - startPos.x;
+        float height = mousePos.y - startPos.y;
+
+        selectionBox.sizeDelta = new Vector2(Mathf.Abs(width), Mathf.Abs(height));
+        selectionBox.anchoredPosition = startPos + new Vector2(width / 2, height / 2);
+    }
+
+    void ReleaseSelectionBox()
+    {
+        // Disabling the selection box
+        selectionBox.gameObject.SetActive(false);
+
+        Vector2 min = selectionBox.anchoredPosition - (selectionBox.sizeDelta / 2);
+        Vector2 max = selectionBox.anchoredPosition +  (selectionBox.sizeDelta / 2);
+
+        GameObject[] objects = GameObject.FindGameObjectsWithTag("Sliceable");
+
+        foreach(GameObject obj in objects)
+        {
+            Vector3 screenPos = Camera.main.WorldToScreenPoint(obj.transform.position);
+
+            if(screenPos.x > min.x && screenPos.x < max.x && screenPos.y > min.y && screenPos.y < max.y)
+            {
+                SelectModel(obj);
+                isBoxSelection = true;
+            }
+        }
     }
 
     public void SelectModel(GameObject obj)
@@ -109,6 +174,17 @@ public class SelectionManager : MonoBehaviour
         SessionEvents.current.DeselectionAny();
         SessionEvents.current.ModelDeselected(obj.name);
         UpdateMeshShader(obj, standardShader);
+    }
+
+    /// <summary>
+    /// Deselect all the currently selected objects
+    /// </summary>
+    public void DeselectAll()
+    {
+        foreach(string name in GetSelection().ToArray())
+        {
+            DeselectModel(GameObject.Find(name));
+        }
     }
 
     /// <summary>
