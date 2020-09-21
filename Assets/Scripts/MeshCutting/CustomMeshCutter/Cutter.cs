@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Cutter
 {
+    private static float sepatrationFactor = 1.5f;
+
     public static void SplitOBJ(GameObject obj, Transform selection, Vector3 direction)
     {
         float[] coeffs = ParallelismCoefficient(selection, direction, 0.0f);
@@ -26,6 +28,9 @@ public class Cutter
         cutPlane.SetNormalAndPosition(plane.transform.up, selection.position);
 
         int count = 0;
+        Vector3 leftMidpoint = Vector3.zero;
+        Vector3 rightMidpoint = Vector3.zero;
+  
         foreach (Transform child in obj.transform)
         {
             Transform child1 = Object.Instantiate(child);
@@ -42,6 +47,19 @@ public class Cutter
         }
 
         GameObject.Destroy(obj.gameObject);
+
+        // Separate the objects
+        SeparateMesh(left.transform, right.transform, cutPlane.normal, sepatrationFactor);
+    }
+
+    private static void SeparateMesh(Transform obj1, Transform obj2, Vector3 normal, float factor)
+    {
+        obj1.Translate(normal * factor);
+        obj2.Translate(normal * -factor);
+
+        // Set selection tag
+        obj1.gameObject.tag = "Selectable";
+        obj2.gameObject.tag = "Selectable";
     }
 
     /// <summary>
@@ -69,7 +87,7 @@ public class Cutter
     /// <param name="val"></param>
     /// <param name="values"></param>
     /// <returns></returns>
-    private static float ClosetTo(float val, float[] values)
+    private static float ClosestTo(float val, float[] values)
     {
         // float closest = 0.0f;
         float distance = Mathf.Abs(values[0]);
@@ -90,5 +108,34 @@ public class Cutter
         }
 
         return values[idx];
+    }
+
+    public static GameObject DetachMesh(string[] names)
+    {
+        List<Transform> children = new List<Transform>();
+        GameObject parent = new GameObject();
+        parent.tag = "Selectable";
+        Vector3 midpoint = Vector3.zero;
+
+        foreach (string name in names)
+        {
+            GameObject child = GameObject.Find(name);
+            midpoint = (midpoint + child.transform.position) / 2;
+            children.Add(child.transform);
+        }
+
+        parent.transform.position = midpoint;
+        parent.AddComponent<Rigidbody>();
+        parent.AddComponent<ItemDragger>();
+        parent.AddComponent<MousePositionInWorld>();
+        parent.AddComponent<MoveItemDefault>();
+        parent.AddComponent<SelectableItemSelector>();
+
+        foreach(Transform child in children)
+        {
+            child.parent = parent.transform;
+        }
+
+        return parent;
     }
 }

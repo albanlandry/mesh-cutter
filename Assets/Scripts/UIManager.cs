@@ -39,8 +39,10 @@ public class UIManager : MonoBehaviour
         SessionEvents.current.OnModelDeselected += DeselectRow;
         SessionEvents.current.OnCutModeEnable += EnableGUIElements;
         SessionEvents.current.OnCutModeDisable += DisableGUIElements;
-        SessionEvents.current.OnSelectionAny += UpdateExposure;
-        SessionEvents.current.OnDeselectionAny += UpdateExposure;
+        // SessionEvents.current.OnSelectionAny += UpdateExposure;
+        // SessionEvents.current.OnDeselectionAny += UpdateExposure;
+        SessionEvents.current.OnSelectionAny += AddSelectionToPanel;
+        SessionEvents.current.OnDeselectionAny += removeSelectionToPanel;
 
         hierarchy = new HierarchyListModel();
         selectionManager = GameObject.Find("MainManager").GetComponent<SelectionManager>();
@@ -83,6 +85,27 @@ public class UIManager : MonoBehaviour
 
     void DisableGUIElements() {
         editionMode.text = "Selection Mode";
+    }
+
+    public void AddSelectionToPanel()
+    {
+        List<string> names = selectionManager.GetSelection();
+
+        foreach(string name in names)
+        {
+            AddToHierarchy(name, "");
+        }
+    }
+
+    private void removeSelectionToPanel()
+    {
+        List<string> names = selectionManager.GetSelection();
+
+        foreach (string name in names)
+        {
+            RemoveFromHierarchy(name);
+        }
+        
     }
 
     public void UpdateMaterial()
