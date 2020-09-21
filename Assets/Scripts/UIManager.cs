@@ -35,14 +35,14 @@ public class UIManager : MonoBehaviour
     {
         SessionEvents.current.onModelLoaded += AddToHierarchy;
         SessionEvents.current.onModelUnLoaded += RemoveFromHierarchy;
-        SessionEvents.current.OnModelSelected += SelectRow;
-        SessionEvents.current.OnModelDeselected += DeselectRow;
+        // SessionEvents.current.OnModelSelected += SelectRow;
+        // SessionEvents.current.OnModelDeselected += DeselectRow;
         SessionEvents.current.OnCutModeEnable += EnableGUIElements;
         SessionEvents.current.OnCutModeDisable += DisableGUIElements;
         // SessionEvents.current.OnSelectionAny += UpdateExposure;
         // SessionEvents.current.OnDeselectionAny += UpdateExposure;
-        SessionEvents.current.OnSelectionAny += AddSelectionToPanel;
-        SessionEvents.current.OnDeselectionAny += removeSelectionToPanel;
+        // SessionEvents.current.OnSelectionAny += AddSelectionToPanel;
+        // SessionEvents.current.OnDeselectionAny += removeSelectionToPanel;
 
         hierarchy = new HierarchyListModel();
         selectionManager = GameObject.Find("MainManager").GetComponent<SelectionManager>();
@@ -89,6 +89,7 @@ public class UIManager : MonoBehaviour
 
     public void AddSelectionToPanel()
     {
+        ClearContentHierarchyContent();
         List<string> names = selectionManager.GetSelection();
 
         foreach(string name in names)
@@ -152,6 +153,7 @@ public class UIManager : MonoBehaviour
 
     private void AddToHierarchy(string id, string parent)
     {
+        ClearContentHierarchyContent();
         HierarchyListNode node = new HierarchyListNode();
         node.Id = id;
         node.Parent = parent;
