@@ -14,6 +14,7 @@ public class SelectionManager : MonoBehaviour
     private Shader standardShader;
     bool isCutting = false;
     bool isBoxSelection = false;
+    bool isBoxSelectionEnabled = true;
 
     void Start()
     {
@@ -21,6 +22,8 @@ public class SelectionManager : MonoBehaviour
         SessionEvents.current.OnCutModeEnable += CutEnable;
         SessionEvents.current.OnCutModeDisable += CutDisable;
         SessionEvents.current.onModelUnLoaded += removeFromSelection;
+        SessionEvents.current.OnItemDragAny += DisableBoxSelection;
+        SessionEvents.current.OnItemDragStopAny += EnableBoxSelection;
 
         selected = new List<string>();
         rayProvider = GetComponent<IRayProvider>();
@@ -35,6 +38,8 @@ public class SelectionManager : MonoBehaviour
         SessionEvents.current.OnCutModeEnable -= CutEnable;
         SessionEvents.current.OnCutModeDisable -= CutDisable;
         SessionEvents.current.onModelUnLoaded -= removeFromSelection;
+        SessionEvents.current.OnItemDragAny -= DisableBoxSelection;
+        SessionEvents.current.OnItemDragStopAny -= EnableBoxSelection;
     }
 
     void CutEnable() {
@@ -48,7 +53,7 @@ public class SelectionManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!isCutting) { 
+        if (!isCutting && isBoxSelectionEnabled) { 
             Transform selection;
 
             if (Input.GetMouseButtonDown(0))
@@ -91,7 +96,17 @@ public class SelectionManager : MonoBehaviour
                                 SessionEvents.current.ModelSelected(select);
                                 UpdateMeshShader(selection.gameObject, selectionShader);
                                 */
-                                SelectModel(selection.gameObject);
+                                Debug.Log("Selection name: " + select);
+
+                                if (selection.tag.Equals("Selectable"))
+                                {
+                                    SelectModelFromParent(selection.gameObject);
+                                }
+                                else
+                                {
+                                    SelectModel(selection.gameObject);
+                                }
+
                             }
                             else // Deselect to delete from the list of selected item
                             {
@@ -164,6 +179,14 @@ public class SelectionManager : MonoBehaviour
         UpdateMeshShader(obj, selectionShader);
     }
 
+    public void SelectModelFromParent(GameObject obj)
+    {
+        foreach(Transform child in obj.transform)
+        {
+            SelectModel(child.gameObject);
+        }
+    }
+
     /// <summary>
     /// 
     /// </summary>
@@ -221,5 +244,14 @@ public class SelectionManager : MonoBehaviour
         }
 
         selected.Clear();
+    }
+
+    public void DisableBoxSelection()
+    {
+        isBoxSelectionEnabled = false;
+    }
+    public void EnableBoxSelection()
+    {
+        isBoxSelectionEnabled = true;
     }
 }

@@ -61,6 +61,15 @@ public class SessionManager : MonoBehaviour
             DisableCutMode();
         }
 
+        if (Input.GetKey(KeyCode.B))
+        {
+            SessionEvents.current.EnableSelection();
+        }
+        else
+        {
+            SessionEvents.current.DisableSelection();
+        }
+
         if (Input.GetKeyDown(KeyCode.R))
         {
             selectionManager.ClearSelection();

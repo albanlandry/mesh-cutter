@@ -13,7 +13,13 @@ public class DefaultItemSelector : MonoBehaviour, ISelector
             GameObject selectable = hitPoint.collider.gameObject;
             if (selectable != null)
             {
-                selection = hitPoint.transform;
+                if (!selectable.tag.Equals("NOT_SELECTABLE"))
+                {
+                    if (!selectable.tag.ToLower().Equals("Selectable".ToLower()))
+                    {
+                        selection = hitPoint.transform;
+                    }
+                }
             }
         }
     }

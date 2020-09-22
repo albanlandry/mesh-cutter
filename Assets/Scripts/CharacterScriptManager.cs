@@ -10,6 +10,16 @@ public class CharacterScriptManager : MonoBehaviour
     {
         SessionEvents.current.OnCutModeEnable += EnableScript;
         SessionEvents.current.OnCutModeDisable += DisableScript;
+        SessionEvents.current.OnSelectionEnable += EnableScript;
+        SessionEvents.current.OnSelectionDisable += DisableScript;
+    }
+
+    private void OnDisable()
+    {
+        SessionEvents.current.OnCutModeEnable -= EnableScript;
+        SessionEvents.current.OnCutModeDisable -= DisableScript;
+        SessionEvents.current.OnSelectionEnable -= EnableScript;
+        SessionEvents.current.OnSelectionDisable -= DisableScript;
     }
 
     void EnableScript()

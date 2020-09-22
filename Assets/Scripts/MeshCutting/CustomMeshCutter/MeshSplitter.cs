@@ -74,8 +74,14 @@ public class MeshSplitter : MonoBehaviour
                 plane.transform.position = selection.position;
                 plane.transform.rotation = Quaternion.LookRotation(cutDirection);
                 */
-                if(isCutting)
-                    Cutter.SplitOBJ(selection.parent.gameObject, selection, cutDirection);
+                if (isCutting)
+                {
+                    Debug.Log("Selection: " + selection);
+                    if(selection.parent != null )
+                        Cutter.SplitOBJ(selection.parent.gameObject, selection, cutDirection);
+                    else
+                        Cutter.SplitOBJ(selection.gameObject, selection, cutDirection);
+                }
             }
         }
 

@@ -50,6 +50,22 @@ public class Cutter
 
         // Separate the objects
         SeparateMesh(left.transform, right.transform, cutPlane.normal, sepatrationFactor);
+        AddComponentsTo(left);
+        AddComponentsTo(right);
+
+    }
+
+    /// <summary>
+    /// Add Unity components to the gameobject obj
+    /// </summary>
+    /// <param name="obj"></param>
+    private static void AddComponentsTo(GameObject obj)
+    {
+        obj.AddComponent<Rigidbody>();
+        obj.AddComponent<ItemDragger>();
+        obj.AddComponent<MousePositionInWorld>();
+        obj.AddComponent<MoveItemDefault>();
+        obj.AddComponent<SelectableItemSelector>();
     }
 
     private static void SeparateMesh(Transform obj1, Transform obj2, Vector3 normal, float factor)
@@ -125,13 +141,9 @@ public class Cutter
         }
 
         parent.transform.position = midpoint;
-        parent.AddComponent<Rigidbody>();
-        parent.AddComponent<ItemDragger>();
-        parent.AddComponent<MousePositionInWorld>();
-        parent.AddComponent<MoveItemDefault>();
-        parent.AddComponent<SelectableItemSelector>();
+        AddComponentsTo(parent);
 
-        foreach(Transform child in children)
+        foreach (Transform child in children)
         {
             child.parent = parent.transform;
         }

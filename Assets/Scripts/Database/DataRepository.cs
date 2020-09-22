@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions; 
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class DataRepository : MonoBehaviour
 {
@@ -36,8 +37,12 @@ public class DataRepository : MonoBehaviour
         string regex = string.Format("^Fuel Channel_C-{0}$", q);
         Regex pattern = new Regex(regex);
 
+        try {
+            long key = long.Parse(q);
+            return models.ContainsKey(key) ? models[key] : null;
+        } catch(Exception e)
+        { Debug.LogError(e.StackTrace); }
 
-        long key = long.Parse(q);
-        return models.ContainsKey(key) ? models[key] : null;
+        return null;
     }
 }

@@ -38,7 +38,7 @@ public class ItemDragger : MonoBehaviour
 
     private void OnMouseDrag()
     {
-        Debug.Log("Mouse drawing");
+        SessionEvents.current.ItemDragAny();
         // Compute the item z-coordinate relative to its current position
         Vector3 curMousePos = mousePosition.GetMousePosition();
 
@@ -65,6 +65,7 @@ public class ItemDragger : MonoBehaviour
 
     private void OnMouseUp()
     {
+        SessionEvents.current.ItemDragStopAny();
         rb.isKinematic = false;
     }
 }

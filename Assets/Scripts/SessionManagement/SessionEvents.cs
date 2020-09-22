@@ -89,12 +89,14 @@ public class SessionEvents : MonoBehaviour
         }
     }
 
-    // Selection of an ibject in session
+    // Selection of an object in session
     public event Action<String> OnModelSelected;
     public event Action<String> OnModelDeselected;
     public event Action OnSelectionClear;
     public event Action OnSelectionAny;
     public event Action OnDeselectionAny;
+    public event Action OnItemDragAny;
+    public event Action OnItemDragStopAny;
     public void ModelSelected(string id) {
         if (OnModelSelected != null) {
             OnModelSelected(id);
@@ -129,8 +131,25 @@ public class SessionEvents : MonoBehaviour
         }
     }
 
+    public void ItemDragAny()
+    {
+        if (OnItemDragAny != null)
+        {
+            OnItemDragAny();
+        }
+    }
+    public void ItemDragStopAny()
+    {
+        if (OnItemDragStopAny != null)
+        {
+            OnItemDragStopAny();
+        }
+    }
+
     public event Action OnCutModeEnable;
     public event Action OnCutModeDisable;
+    public event Action OnSelectionEnable;
+    public event Action OnSelectionDisable;
     public void CutModeEnabled() 
     {
         if (OnCutModeEnable != null) {
@@ -143,6 +162,22 @@ public class SessionEvents : MonoBehaviour
         if (OnCutModeDisable != null)
         {
             OnCutModeDisable();
+        }
+    }
+
+    public void EnableSelection()
+    {
+        if (OnSelectionEnable != null)
+        {
+            OnSelectionEnable();
+        }
+    }
+
+    public void DisableSelection()
+    {
+        if (OnSelectionDisable != null)
+        {
+            OnSelectionDisable();
         }
     }
 }

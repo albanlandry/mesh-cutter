@@ -82,11 +82,14 @@ public class UIManager : MonoBehaviour
                     string val = match.Groups["id"].Value;
 
                     DatabaseModel model = repository.search(val);
-                    mass += model.Mass;
-                    volume += model.Volume;
-                    size[0] += model.Size[0];
-                    size[1] += model.Size[1];
-                    size[2] += model.Size[2];
+                    if(model != null)
+                    {
+                        mass += model.Mass;
+                        volume += model.Volume;
+                        size[0] += model.Size[0];
+                        size[1] += model.Size[1];
+                        size[2] += model.Size[2];
+                    }
                 }
 
                 UpdateExposurePanel(modelValue + selection.Length, surfacesValue + mass, 
@@ -159,7 +162,6 @@ public class UIManager : MonoBehaviour
 
     void UpdateModelValueView(string name, string value)
     {
-        Debug.Log("name");
         GameObject.Find(name).GetComponent<Text>().text = value;
     }
 
