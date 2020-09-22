@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,12 +15,14 @@ public class UIManager : MonoBehaviour
     [SerializeField] Color DefaultColor = Color.white;
     [SerializeField] Dropdown dropDown;
     [SerializeField] Text editionMode;
+    [SerializeField] DataRepository repository;
 
     private HierarchyListModel hierarchy;
     private SelectionManager selectionManager;
-    private const string modelValue = "Model: ";
-    private const string surfacesValue = "Surface: ";
-    private const string exposureValue = "Exposures: ";
+    private const string modelValue = "Quantity: ";
+    private const string surfacesValue = "Mass: ";
+    private const string exposureValue = "Volume: ";
+    private const string sizeValue = "Size: ";
 
     private Dictionary<int, int> materialType;
 
@@ -39,8 +42,8 @@ public class UIManager : MonoBehaviour
         // SessionEvents.current.OnModelDeselected += DeselectRow;
         SessionEvents.current.OnCutModeEnable += EnableGUIElements;
         SessionEvents.current.OnCutModeDisable += DisableGUIElements;
-        // SessionEvents.current.OnSelectionAny += UpdateExposure;
-        // SessionEvents.current.OnDeselectionAny += UpdateExposure;
+        SessionEvents.current.OnSelectionAny += UpdateExposure;
+        SessionEvents.current.OnDeselectionAny += UpdateExposure;
         // SessionEvents.current.OnSelectionAny += AddSelectionToPanel;
         // SessionEvents.current.OnDeselectionAny += removeSelectionToPanel;
 
@@ -62,20 +65,39 @@ public class UIManager : MonoBehaviour
         string modelNames = "";
 
         if (selectionManager) {
-            List<string> selection = selectionManager.GetSelection();
-            MeshExposure exposure = new MeshExposure(0, 0.0f);
+            string[] selection = selectionManager.GetSelection().ToArray();
+            exposurePanel.SetActive(true);
 
-            foreach(string selected in selection)
-            {
-                // Find the corresponding object sessionModel
-                MeshExposure exp = GameObject.Find(selected).GetComponent<SessionModel>().GetExposure();
+            if (selection.Length > 0) { 
+                // MeshExposure exposure = new MeshExposure(0, 0.0f);
+                float mass = 0.0f;
+                float volume = 0.0f;
+                float[] size = new float[3] { 0.0f, 0.0f, 0.0f };
 
-                exposure.Faces = exposure.Faces + exp.Faces;
-                exposure.Exposure = exposure.Exposure + exp.Exposure;
-                modelNames += selected+", ";
+                foreach(string selected in selection)
+                {
+                    // Find the corresponding data in the repository
+                    Regex pattern = new Regex(@"^.*Body(?<id>\d+).*$");
+                    Match match = pattern.Match(selected);
+                    string val = match.Groups["id"].Value;
+
+                    DatabaseModel model = repository.search(val);
+                    mass += model.Mass;
+                    volume += model.Volume;
+                    size[0] += model.Size[0];
+                    size[1] += model.Size[1];
+                    size[2] += model.Size[2];
+                }
+
+                UpdateExposurePanel(modelValue + selection.Length, surfacesValue + mass, 
+                    exposureValue + volume, string.Format("{0} {1}x{2}x{3}", sizeValue, size[0], size[1], size[2]));
             }
-
-            UpdateExposurePanel(modelValue + modelNames, surfacesValue + exposure.Faces, exposureValue + exposure.Exposure);
+            else
+            {
+                UpdateExposurePanel(modelValue + selection.Length, surfacesValue + 0,
+                    exposureValue + 0, string.Format("{0} {1}x{2}x{3}", sizeValue, 0, 0, 0));
+                exposurePanel.SetActive(false);
+            }
         }
     }
 
@@ -128,15 +150,17 @@ public class UIManager : MonoBehaviour
         UpdateExposure();
     }
 
-    void UpdateExposurePanel(string model, string surface, string exposure) {
+    void UpdateExposurePanel(string model, string surface, string exposure, string size) {
         UpdateModelValueView("modelValue", model);
         UpdateModelValueView("surfaceValue", surface);
         UpdateModelValueView("exposureValue", exposure);
+        UpdateModelValueView("sizeValue", size);
     }
 
     void UpdateModelValueView(string name, string value)
     {
-        // GameObject.Find(name).GetComponent<Text>().text = value;
+        Debug.Log("name");
+        GameObject.Find(name).GetComponent<Text>().text = value;
     }
 
     private void OnDisable()

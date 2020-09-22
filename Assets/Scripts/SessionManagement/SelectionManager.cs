@@ -77,7 +77,7 @@ public class SelectionManager : MonoBehaviour
                     selection = selector.GetSelection();
 
                     // We add the selection into the selection list if it is not already present
-                    if (selection != null)
+                    if (selection != null && !selection.tag.Equals("NOT_SELECTABLE"))
                     {
                         string select = selection.gameObject.name;
                         // Debug.Log("selection: " + select);
